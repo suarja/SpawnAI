@@ -2,6 +2,7 @@
 
 ## Vue d'ensemble Architecture
 [Internet Access](https://www.e2b.dev/docs/sandbox/internet-access)
+
 [Claude Code in Sandbox Guide](https://www.e2b.dev/blog/javascript-guide-run-claude-code-in-an-e2b-sandbox)
 
 ### Principe Central E2B + SpawnAI
