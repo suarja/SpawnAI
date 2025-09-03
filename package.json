@@ -1,0 +1,36 @@
+{
+  "name": "spawnai",
+  "version": "0.1.0",
+  "description": "Contrarian AI-powered ephemeral app generator",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "type-check": "turbo type-check",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "dev:orchestrator": "turbo dev --filter=orchestrator",
+    "build:orchestrator": "turbo build --filter=orchestrator",
+    "test:orchestrator": "turbo test --filter=orchestrator"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.6",
+    "typescript": "5.9.2"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9.0.0"
+  },
+  "keywords": [
+    "ai",
+    "code-generation",
+    "ephemeral",
+    "docker",
+    "orchestration"
+  ]
+}

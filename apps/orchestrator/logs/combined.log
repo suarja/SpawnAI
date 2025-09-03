@@ -1,0 +1,9 @@
+{"level":"info","message":"🚀 SpawnAI Orchestrator running on port 3001","service":"orchestrator","timestamp":"2025-09-03T15:55:49.526Z"}
+{"level":"info","message":"Environment:","service":"orchestrator","timestamp":"2025-09-03T15:55:49.527Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"orchestrator","timestamp":"2025-09-03T16:05:08.038Z"}
+{"level":"info","message":"🚀 SpawnAI Orchestrator running on port 3001","service":"orchestrator","timestamp":"2025-09-03T16:09:22.887Z"}
+{"level":"info","message":"Environment:","service":"orchestrator","timestamp":"2025-09-03T16:09:22.888Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"orchestrator","timestamp":"2025-09-03T16:11:12.961Z"}
+{"level":"info","message":"🚀 SpawnAI Orchestrator running on port 3001","service":"orchestrator","timestamp":"2025-09-03T16:11:34.628Z"}
+{"level":"info","message":"Environment:","service":"orchestrator","timestamp":"2025-09-03T16:11:34.629Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","service":"orchestrator","timestamp":"2025-09-03T16:12:16.773Z"}

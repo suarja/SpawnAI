@@ -1,0 +1,27 @@
+
+
+> @spawnai/shared@0.1.0 build /Users/mata/App/25k/SpawnAI/packages/shared
+> tsc
+
+[96msrc/index.ts[0m:[93m10[0m:[93m1[0m - [91merror[0m[90m TS2308: [0mModule './types' has already exported a member named 'LogEntry'. Consider explicitly re-exporting to resolve the ambiguity.
+
+[7m10[0m export * from './utils';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/utils/index.ts[0m:[93m85[0m:[93m16[0m - [91merror[0m[90m TS2322: [0mType 'T' is not assignable to type 'object'.
+
+[7m85[0m     if (key in obj) {
+[7m  [0m [91m               ~~~[0m
+
+  [96msrc/utils/index.ts[0m:[93m82[0m:[93m22[0m
+    [7m82[0m export function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+    [7m  [0m [96m                     ~[0m
+    This type parameter might need an `extends object` constraint.
+
+
+Found 2 errors in 2 files.
+
+Errors  Files
+     1  src/index.ts[90m:10[0m
+     1  src/utils/index.ts[90m:85[0m
+[41m[30m ELIFECYCLE [39m[49m [31mCommand failed with exit code 2.[39m
