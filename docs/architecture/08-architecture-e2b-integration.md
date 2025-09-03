@@ -1,6 +1,8 @@
 # Architecture E2B pour SpawnAI - Intégration Technique
 
 ## Vue d'ensemble Architecture
+[Internet Access](https://www.e2b.dev/docs/sandbox/internet-access)
+[Claude Code in Sandbox Guide](https://www.e2b.dev/blog/javascript-guide-run-claude-code-in-an-e2b-sandbox)
 
 ### Principe Central E2B + SpawnAI
 **"Code généré par Claude → Exécution sécurisée E2B → App éphémère HTTPS"**
