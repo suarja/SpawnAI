@@ -5,6 +5,8 @@
 
 [Claude Code in Sandbox Guide](https://www.e2b.dev/blog/javascript-guide-run-claude-code-in-an-e2b-sandbox)
 
+[Pricing](https://www.e2b.dev/pricing)
+
 ### Principe Central E2B + SpawnAI
 **"Code généré par Claude → Exécution sécurisée E2B → App éphémère HTTPS"**
 
