@@ -59,6 +59,7 @@ SpawnAI/
 ### Core Modules
 
 #### 1. VM Management (`packages/orchestrator/src/vm/`)
+
 ```typescript
 // provisioner.ts
 interface VMConfig {
@@ -67,7 +68,7 @@ interface VMConfig {
     memory: string;
     storage: string;
   };
-  runtime: 'node' | 'python' | 'go';
+  runtime: "node" | "python" | "go";
   timeout: number; // hours
 }
 
@@ -79,11 +80,12 @@ class VMProvisioner {
 ```
 
 #### 2. Claude Integration (`packages/orchestrator/src/ai/`)
+
 ```typescript
 // client.ts
 interface GenerationRequest {
   description: string;
-  appType: 'web' | 'api' | 'script';
+  appType: "web" | "api" | "script";
   runtime: string;
 }
 
@@ -94,6 +96,7 @@ class ClaudeClient {
 ```
 
 #### 3. Security Layer (`packages/orchestrator/src/security/`)
+
 ```typescript
 // certificates.ts
 class CertificateManager {
@@ -104,6 +107,7 @@ class CertificateManager {
 ```
 
 #### 4. Deployment Engine (`packages/orchestrator/src/deployment/`)
+
 ```typescript
 // deployer.ts
 class AppDeployer {
@@ -116,6 +120,7 @@ class AppDeployer {
 ## Testing Strategy for Phase 1
 
 ### Test Environment Setup
+
 ```bash
 # Local development with Docker Compose
 docker-compose up -d  # Redis, PostgreSQL, test containers
@@ -129,6 +134,7 @@ npm run test:integration
 ```
 
 ### Test Scenarios
+
 1. **VM Lifecycle**: Create → Deploy → Monitor → Destroy
 2. **Code Generation**: Simple app types with validation
 3. **Security**: Certificate generation and installation
@@ -137,6 +143,7 @@ npm run test:integration
 ## Development Workflow
 
 ### 1. Setup Monorepo
+
 ```bash
 # Root level
 npm init -y
@@ -147,6 +154,7 @@ npx lerna init
 ```
 
 ### 2. Create Orchestrator Package
+
 ```bash
 mkdir -p packages/orchestrator/src/{vm,ai,security,deployment,api}
 cd packages/orchestrator
@@ -156,6 +164,7 @@ npm install -D @types/express jest ts-jest
 ```
 
 ### 3. Development Commands
+
 ```bash
 # Root level commands
 npm run dev:orchestrator     # Start orchestrator in dev mode
@@ -167,6 +176,7 @@ npm run docker:build        # Build Docker images
 ## Why This Structure?
 
 ### Advantages
+
 1. **Modular**: Clear separation of concerns
 2. **Testable**: Each module can be tested independently
 3. **Scalable**: Easy to add new packages (frontend, mobile, etc.)
@@ -174,6 +184,7 @@ npm run docker:build        # Build Docker images
 5. **Deployable**: Each package can have its own deployment strategy
 
 ### Focus on Orchestrator First
+
 - Most complex and critical component
 - Provides immediate value for testing
 - Can be developed/tested independently
@@ -188,3 +199,4 @@ npm run docker:build        # Build Docker images
 5. **Test end-to-end: Request → Generate → Deploy → Access**
 
 This approach allows us to start simple, test early, and build confidence in the core mechanics before adding UI complexity.
+
