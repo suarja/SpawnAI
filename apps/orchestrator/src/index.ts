@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { createLogger, format, transports } from 'winston';
+import { E2BManager } from './vm/e2b-manager';
+import { createSpawnRoutes } from './api/routes/spawn';
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +31,9 @@ const logger = createLogger({
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Initialize E2B Manager
+const e2bManager = new E2BManager(logger);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -39,7 +44,7 @@ app.get('/health', (req, res) => {
     status: 'healthy', 
     service: 'orchestrator',
     timestamp: new Date().toISOString(),
-    versio:: '0.1.0'
+    version: '0.1.0'
   });
 });
 
@@ -49,13 +54,20 @@ app.get('/api/status', (req, res) => {
     service: 'SpawnAI Orchestrator',
     status: 'running',
     features: {
-      vmManagement: 'planned',
+      e2bSandboxManagement: 'ready',
       claudeIntegration: 'planned',
       security: 'planned',
       deployment: 'planned'
+    },
+    e2b: {
+      apiKey: process.env.E2B_API_KEY ? 'configured' : 'missing',
+      activeSandboxes: e2bManager.listActiveSandboxes?.length || 0
     }
   });
 });
+
+// Spawn API routes - sandbox lifecycle management
+app.use('/api/spawn', createSpawnRoutes(e2bManager, logger));
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
