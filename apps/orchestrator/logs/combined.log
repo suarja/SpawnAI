@@ -17,3 +17,12 @@
 {"level":"info","message":"SIGTERM received, shutting down gracefully","service":"orchestrator","timestamp":"2025-09-04T14:50:57.510Z"}
 {"level":"info","message":"🚀 SpawnAI Orchestrator running on port 3001","service":"orchestrator","timestamp":"2025-09-04T14:50:57.711Z"}
 {"level":"info","message":"Environment:","service":"orchestrator","timestamp":"2025-09-04T14:50:57.712Z"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"orchestrator","timestamp":"2025-09-04T15:02:19.833Z"}
+{"level":"info","message":"🚀 SpawnAI Orchestrator running on port 3001","service":"orchestrator","timestamp":"2025-09-04T15:02:42.541Z"}
+{"level":"info","message":"Environment:","service":"orchestrator","timestamp":"2025-09-04T15:02:42.542Z"}
+{"appType":"script","level":"info","message":"Creating new sandbox session","service":"orchestrator","sessionId":"4bd183d5-f723-4441-800e-e9910ed006b1","timestamp":"2025-09-04T15:04:00.561Z"}
+{"appType":"script","level":"info","message":"Creating E2B sandbox","service":"orchestrator","sessionId":"4bd183d5-f723-4441-800e-e9910ed006b1","timestamp":"2025-09-04T15:04:00.561Z"}
+{"host":"iqjtpdt38lmugzryzspq4.e2b.dev","level":"info","message":"E2B sandbox created successfully","sandboxId":"iqjtpdt38lmugzryzspq4","service":"orchestrator","sessionId":"4bd183d5-f723-4441-800e-e9910ed006b1","timestamp":"2025-09-04T15:04:01.548Z"}
+{"level":"info","message":"Sandbox created successfully","sandboxId":"iqjtpdt38lmugzryzspq4","service":"orchestrator","sessionId":"4bd183d5-f723-4441-800e-e9910ed006b1","status":"created","timestamp":"2025-09-04T15:04:01.549Z"}
+{"level":"info","message":"Destroying sandbox","service":"orchestrator","sessionId":"4bd183d5-f723-4441-800e-e9910ed006b1","timestamp":"2025-09-04T15:30:35.255Z"}
+{"level":"info","message":"Sandbox destroyed","sandboxId":"iqjtpdt38lmugzryzspq4","service":"orchestrator","sessionId":"4bd183d5-f723-4441-800e-e9910ed006b1","timestamp":"2025-09-04T15:30:35.897Z"}
