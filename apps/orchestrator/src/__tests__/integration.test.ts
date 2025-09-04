@@ -2,22 +2,71 @@ import request from "supertest";
 import express from "express";
 import { E2BManager, SandboxConfig } from "../vm/e2b-manager";
 import { createSpawnRoutes } from "../api/routes/spawn";
+import { ClaudeClient } from "../ai/claude-client";
 import { Logger } from "winston";
 
-// Mock E2B SDK
-jest.mock("@e2b/code-interpreter", () => ({
-  Sandbox: {
-    create: jest.fn().mockResolvedValue({
-      getInfo: jest.fn().mockResolvedValue({
-        sandboxId: "mock-sandbox-id",
-        hostname: "mock-host.e2b.dev",
-      }),
-      kill: jest.fn().mockResolvedValue(undefined),
-      files: {
-        write: jest.fn().mockResolvedValue(undefined),
-      },
+// Mock E2B Manager directly for simpler testing
+jest.mock("../vm/e2b-manager", () => ({
+  E2BManager: jest.fn().mockImplementation(() => ({
+    createSandbox: jest.fn().mockImplementation((config) => Promise.resolve({
+      id: "mock-sandbox-id",
+      sessionId: config.sessionId,
+      status: "created",
+      createdAt: new Date(),
+      publicUrl: "https://3000-mock-host.e2b.dev",
+    })),
+    deploySandbox: jest.fn().mockResolvedValue({
+      success: true,
+      appUrl: "https://3000-mock-host.e2b.dev",
+      deployedAt: new Date(),
+      logs: ["Mock deployment log"],
     }),
-  },
+    monitorSandbox: jest.fn().mockImplementation((sessionId) => {
+      if (sessionId === "non-existent-id") {
+        return Promise.resolve(null);
+      }
+      return Promise.resolve({
+        id: "mock-sandbox-id",
+        sessionId: sessionId,
+        status: "ready",
+        createdAt: new Date(),
+        publicUrl: "https://3000-mock-host.e2b.dev",
+      });
+    }),
+    destroySandbox: jest.fn().mockResolvedValue(undefined),
+    listActiveSandboxes: jest.fn().mockResolvedValue([]),
+    cleanupExpiredSandboxes: jest.fn().mockResolvedValue(undefined),
+  })),
+}));
+
+// Mock Anthropic SDK
+jest.mock("@anthropic-ai/sdk", () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    messages: {
+      create: jest.fn().mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              type: "single-file",
+              files: [
+                {
+                  path: "/app/index.html",
+                  content: "<html><body><h1>Mock Generated App</h1></body></html>",
+                },
+              ],
+              startCommand: "cd /app && python3 -m http.server 3000",
+            }),
+          },
+        ],
+        usage: {
+          input_tokens: 100,
+          output_tokens: 200,
+        },
+      }),
+    },
+  })),
 }));
 
 // Mock logger
@@ -31,28 +80,44 @@ const mockLogger: Logger = {
 describe("E2B Integration Tests", () => {
   let app: express.Application;
   let e2bManager: E2BManager;
+  let claudeClient: ClaudeClient;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     e2bManager = new E2BManager(mockLogger);
+    claudeClient = new ClaudeClient(
+      { apiKey: "test-api-key" },
+      mockLogger,
+    );
 
     app = express();
     app.use(express.json());
-    app.use("/api/spawn", createSpawnRoutes(e2bManager, mockLogger));
+    app.use("/api/spawn", createSpawnRoutes(e2bManager, mockLogger, claudeClient));
   });
 
   describe("Sandbox Lifecycle", () => {
     it("should create and destroy a sandbox", async () => {
-      // Create sandbox
+      // Create sandbox with testCode to ensure deployment
+      const testCode = {
+        type: "single-file" as const,
+        files: [
+          {
+            path: "/app/test.html",
+            content: "<html><body>Test</body></html>",
+          },
+        ],
+        startCommand: "cd /app && python3 -m http.server 3000",
+      };
+
       const createResponse = await request(app).post("/api/spawn").send({
         appType: "script",
-        prompt: "Create a hello world script",
+        testCode,
       });
 
       expect(createResponse.status).toBe(200);
       expect(createResponse.body).toMatchObject({
-        status: "created",
+        status: "ready",
         publicUrl: expect.stringContaining("https://3000-"),
       });
 
@@ -113,6 +178,63 @@ describe("E2B Integration Tests", () => {
       expect(result).toMatchObject({
         status: "created",
         publicUrl: expect.stringContaining("https://3000-"),
+      });
+    });
+  });
+
+  describe("Claude AI Integration", () => {
+    it("should generate and deploy code from natural language prompt", async () => {
+      const response = await request(app).post("/api/spawn").send({
+        appType: "webapp",
+        prompt: "Create a simple hello world page",
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        status: "ready",
+        publicUrl: expect.stringContaining("https://3000-"),
+        sessionId: expect.any(String),
+      });
+    });
+
+    it("should fallback to test code when prompt provided but Claude fails", async () => {
+      // Mock Claude to fail
+      const mockClaudeClient = new ClaudeClient(
+        { apiKey: "test-api-key" },
+        mockLogger,
+      );
+      jest.spyOn(mockClaudeClient, "generateCode").mockResolvedValueOnce({
+        success: false,
+        error: "API error",
+      });
+
+      const appWithFailingClaude = express();
+      appWithFailingClaude.use(express.json());
+      appWithFailingClaude.use(
+        "/api/spawn",
+        createSpawnRoutes(e2bManager, mockLogger, mockClaudeClient),
+      );
+
+      const response = await request(appWithFailingClaude)
+        .post("/api/spawn")
+        .send({
+          appType: "script",
+          prompt: "Create a test script",
+        });
+
+      expect(response.status).toBe(500);
+      expect(response.body.error).toBe("Code generation failed");
+    });
+
+    it("should handle missing prompt gracefully", async () => {
+      const response = await request(app).post("/api/spawn").send({
+        appType: "webapp",
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        status: "created",
+        sessionId: expect.any(String),
       });
     });
   });

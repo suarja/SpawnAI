@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { createLogger, format, transports } from 'winston';
 import { E2BManager } from './vm/e2b-manager';
+import { ClaudeClient } from './ai/claude-client';
 import { createSpawnRoutes } from './api/routes/spawn';
 
 // Load environment variables
@@ -34,6 +35,17 @@ const port = process.env.PORT || 3001;
 // Initialize E2B Manager
 const e2bManager = new E2BManager(logger);
 
+// Initialize Claude AI Client (optional)
+let claudeClient: ClaudeClient | undefined;
+if (process.env.CLAUDE_API_KEY) {
+  claudeClient = new ClaudeClient({
+    apiKey: process.env.CLAUDE_API_KEY
+  }, logger);
+  logger.info('Claude AI client initialized');
+} else {
+  logger.warn('CLAUDE_API_KEY not found - AI generation disabled');
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -55,19 +67,23 @@ app.get('/api/status', (req, res) => {
     status: 'running',
     features: {
       e2bSandboxManagement: 'ready',
-      claudeIntegration: 'planned',
+      claudeIntegration: claudeClient ? 'ready' : 'disabled',
       security: 'planned',
       deployment: 'planned'
     },
     e2b: {
       apiKey: process.env.E2B_API_KEY ? 'configured' : 'missing',
       activeSandboxes: e2bManager.listActiveSandboxes?.length || 0
+    },
+    claude: {
+      apiKey: process.env.CLAUDE_API_KEY ? 'configured' : 'missing',
+      status: claudeClient ? 'ready' : 'disabled'
     }
   });
 });
 
-// Spawn API routes - sandbox lifecycle management
-app.use('/api/spawn', createSpawnRoutes(e2bManager, logger));
+// Spawn API routes - AI-powered sandbox lifecycle management
+app.use('/api/spawn', createSpawnRoutes(e2bManager, logger, claudeClient));
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

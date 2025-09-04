@@ -1,13 +1,15 @@
 import { Router, Request, Response } from 'express'
 import { E2BManager, SandboxConfig, GeneratedCode } from '../../vm/e2b-manager'
+import { ClaudeClient, CodeGenerationRequest } from '../../ai/claude-client'
 import { Logger } from 'winston'
 import { v4 as uuidv4 } from 'uuid'
 
 export interface CreateSandboxRequest {
   appType: 'webapp' | 'api' | 'script'
+  prompt?: string // Natural language prompt for Claude generation
   allowInternetAccess?: boolean
   timeoutMs?: number
-  testCode?: GeneratedCode // For testing purposes
+  testCode?: GeneratedCode // For testing purposes (fallback)
 }
 
 export interface CreateSandboxResponse {
@@ -29,18 +31,18 @@ export interface SandboxStatusResponse {
 
 /**
  * Spawn API Routes
- * Handles sandbox lifecycle management endpoints
+ * Handles AI-powered sandbox lifecycle management endpoints
  */
-export function createSpawnRoutes(e2bManager: E2BManager, logger: Logger): Router {
+export function createSpawnRoutes(e2bManager: E2BManager, logger: Logger, claudeClient?: ClaudeClient): Router {
   const router = Router()
 
   /**
    * POST /api/spawn
-   * Create a new sandbox and optionally deploy test code
+   * Create a new sandbox with AI-generated code from natural language prompt
    */
   router.post('/', async (req: Request, res: Response) => {
     try {
-      const { appType, allowInternetAccess = true, timeoutMs = 3600000, testCode }: CreateSandboxRequest = req.body
+      const { appType, prompt, allowInternetAccess = true, timeoutMs = 3600000, testCode }: CreateSandboxRequest = req.body
 
       // Validate input
       if (!appType || !['webapp', 'api', 'script'].includes(appType)) {
@@ -50,7 +52,12 @@ export function createSpawnRoutes(e2bManager: E2BManager, logger: Logger): Route
       }
 
       const sessionId = uuidv4()
-      logger.info('Creating new sandbox session', { sessionId, appType })
+      logger.info('Creating new AI-powered sandbox session', { 
+        sessionId, 
+        appType,
+        hasPrompt: !!prompt,
+        hasTestCode: !!testCode 
+      })
 
       // Create sandbox configuration
       const config: SandboxConfig = {
@@ -68,16 +75,57 @@ export function createSpawnRoutes(e2bManager: E2BManager, logger: Logger): Route
       const sandbox = await e2bManager.createSandbox(config)
 
       let deploymentResult = null
-      if (testCode) {
-        logger.info('Deploying test code to sandbox', { sessionId })
-        deploymentResult = await e2bManager.deploySandbox(sandbox, testCode)
+      let generatedCode: GeneratedCode | undefined
+
+      // Generate code using Claude if prompt provided
+      if (prompt && claudeClient) {
+        logger.info('Generating code with Claude AI', { sessionId, promptLength: prompt.length })
         
-        if (!deploymentResult.success) {
-          logger.error('Test code deployment failed', { 
+        const codeGenRequest: CodeGenerationRequest = {
+          prompt,
+          appType
+        }
+
+        const genResult = await claudeClient.generateCode(codeGenRequest)
+        
+        if (genResult.success && genResult.code) {
+          generatedCode = genResult.code
+          logger.info('Code generation successful', {
+            sessionId,
+            fileCount: genResult.code.files.length,
+            estimatedCost: genResult.usage?.cost || 0
+          })
+
+          // Deploy generated code
+          deploymentResult = await e2bManager.deploySandbox(sandbox, genResult.code)
+        } else {
+          logger.error('Code generation failed', { 
             sessionId, 
-            error: deploymentResult.error 
+            error: genResult.error 
+          })
+          return res.status(500).json({
+            error: 'Code generation failed',
+            details: genResult.error
           })
         }
+      } 
+      // Fallback to test code if provided
+      else if (testCode) {
+        logger.info('Deploying test code to sandbox', { sessionId })
+        deploymentResult = await e2bManager.deploySandbox(sandbox, testCode)
+        generatedCode = testCode
+      }
+
+      // Check deployment result
+      if (deploymentResult && !deploymentResult.success) {
+        logger.error('Code deployment failed', { 
+          sessionId, 
+          error: deploymentResult.error 
+        })
+        return res.status(500).json({
+          error: 'Code deployment failed',
+          details: deploymentResult.error
+        })
       }
 
       const response: CreateSandboxResponse = {
@@ -85,19 +133,20 @@ export function createSpawnRoutes(e2bManager: E2BManager, logger: Logger): Route
         sandboxId: sandbox.id,
         status: deploymentResult?.success ? 'ready' : 'created',
         publicUrl: deploymentResult?.success ? deploymentResult.appUrl : sandbox.publicUrl,
-        estimatedTime: testCode ? 45 : 10 // seconds
+        estimatedTime: prompt ? 60 : (testCode ? 45 : 10) // seconds
       }
 
-      logger.info('Sandbox created successfully', {
+      logger.info('AI-powered sandbox created successfully', {
         sessionId,
         sandboxId: sandbox.id,
-        status: response.status
+        status: response.status,
+        hasGeneratedCode: !!generatedCode
       })
 
       res.json(response)
 
     } catch (error) {
-      logger.error('Failed to create sandbox', { 
+      logger.error('Failed to create AI-powered sandbox', { 
         error: error instanceof Error ? error.message : error 
       })
       res.status(500).json({
