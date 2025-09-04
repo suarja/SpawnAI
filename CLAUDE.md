@@ -156,25 +156,104 @@ curl http://localhost:3001/api/status
 - Automatic cleanup of abandoned sessions  
 - Cost monitoring and alerting
 
-## Common Tasks
+## Development Methodology: Deployment-Driven Development
 
-### Adding New App Templates
-1. Create prompt template in `src/prompts/`
-2. Add validation rules in `src/validation/`
-3. Update UI selection in `src/components/AppTypeSelector.tsx`
-4. Test generation pipeline end-to-end
+### Core Philosophy
+SpawnAI follows **deployment-driven development** with minimal testable steps:
 
-### Infrastructure Monitoring
-- Check VM provisioning success rates
-- Monitor Claude API latency and costs
-- Track resource utilization per session
-- Alert on security anomalies
+1. **Build smallest working feature** (autonomous and testable)
+2. **Add minimal regression-prevention tests** (after implementation, not before)
+3. **Deploy and validate in production** 
+4. **Document completion and next step**
+5. **Move to next autonomous feature**
 
-### Marketing Alignment
-When building features, always consider:
-- Does this maintain our "anti-beautiful" positioning?
-- Are we staying true to ephemeral/personal-use philosophy?
-- Will this feature support our contrarian marketing message?
+### Feature Development Pattern
+
+#### Implementation Phase
+```bash
+# 1. Implement smallest functional feature
+git checkout -b feat/feature-name
+# Code the minimal working implementation
+git commit -m "feat(component): implement [feature] - smallest functional feature"
+```
+
+#### Testing Phase  
+```bash
+# 2. Add minimal tests AFTER implementation
+# Focus: Integration tests over unit tests
+# Coverage: Just enough to prevent regression
+git commit -m "test: add minimal testing for [feature]"
+```
+
+#### Documentation Phase
+```bash
+# 3. Update documentation and roadmap
+git commit -m "docs: update roadmap and feature specifications"
+```
+
+### Testing Philosophy
+
+**✅ DO:**
+- Integration tests for real workflows
+- Test critical paths only
+- Add tests AFTER feature implementation
+- Focus on autonomous feature validation
+- Prevent regression, not comprehensive coverage
+
+**❌ DON'T:**
+- Write tests before implementation (not TDD)
+- Aim for high test coverage percentages
+- Create extensive unit test suites
+- Over-engineer test infrastructure
+
+**Example - E2B Integration Testing:**
+```typescript
+// Good: Minimal integration test covering critical path
+it('should create and destroy sandbox lifecycle', async () => {
+  const response = await request(app).post('/api/spawn').send({...})
+  expect(response.status).toBe(200)
+  // Test real E2B integration, not mocked behavior
+})
+
+// Avoid: Extensive unit testing
+// Don't test every method, parameter combination, edge case
+```
+
+### Current Development Status
+
+**✅ COMPLETED FEATURES:**
+- **Feature #1**: E2B Orchestration Engine (commits: `fe79f4c5` → `db955a6f`)
+  - Production-ready E2B sandbox management
+  - REST API with 4 integration tests
+  - Real deployment validation (<60s capability)
+
+**🎯 NEXT FEATURE:**
+- **Feature #2**: Claude AI Integration  
+  - Implement `src/ai/claude-client.ts`
+  - Connect to existing E2B pipeline
+  - 2-3 integration tests for prompt→code→deploy
+
+### Common Tasks
+
+#### Adding New Features
+1. **Identify smallest autonomous feature** that provides user value
+2. **Implement core functionality** without over-engineering
+3. **Add minimal integration tests** to prevent regression
+4. **Validate in production environment** with real services
+5. **Update roadmap** and mark feature complete
+
+#### Infrastructure Monitoring
+- E2B sandbox success rates (target: >95%)
+- Claude API latency and costs (target: <$0.10/session)
+- Resource utilization per session
+- Error rates and failure modes
+
+#### Marketing Alignment
+Every feature should maintain SpawnAI's contrarian positioning:
+- **"Ugly but functional"** - No polished UIs until core works
+- **Ephemeral by design** - All apps self-destruct
+- **Personal use only** - No collaboration features
+- **Deployment-driven** - Working features over perfect code
 
 ## Important Instruction Reminders
 - Do what has been asked; nothing more, nothing less
@@ -182,3 +261,4 @@ When building features, always consider:
 - ALWAYS prefer editing an existing file to creating a new one
 - NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User
 - NEVER add Claude attribution or co-author lines to git commits. Keep commit messages clean without AI attribution
+- for each feature check the requirements, specs and testing guide in the docs
