@@ -16,64 +16,86 @@ SpawnAI is a contrarian approach to AI-powered application generation. Unlike co
 
 ### High-Level System Design
 ```
-User Interface (React/PWA) → API Gateway → Orchestrator → Ephemeral VM (Claude + Generated App)
+User Interface (React/PWA) → API Gateway → Orchestrator → E2B Sandbox (Claude + Generated App)
+```
+
+### Current Monorepo Structure
+```
+SpawnAI/
+├── apps/orchestrator/              # Main backend service
+│   ├── src/
+│   │   ├── vm/                    # E2B sandbox management
+│   │   ├── ai/                    # Claude API integration
+│   │   ├── security/              # Security & validation
+│   │   ├── deployment/            # App deployment
+│   │   └── api/                   # REST API routes
+├── packages/
+│   ├── shared/                    # Types & utilities
+│   ├── eslint-config/             # Shared linting
+│   └── typescript-config/         # Shared TS configs
+└── docs/
+    ├── features/                  # Feature specifications
+    ├── architecture/              # Technical architecture
+    └── research/                  # Market research
 ```
 
 ### Key Components
-- **Frontend**: Single-page React app with chat interface
-- **Backend**: Node.js/Express with Redis queue system  
-- **Infrastructure**: Docker containers on cloud VMs (Railway/AWS)
-- **AI Integration**: Claude API for code generation
-- **Provisioning**: Automated VM creation with Terraform/Ansible
+- **Frontend**: Single-page React app with chat interface (future)
+- **Backend**: Node.js/Express orchestrator with Redis queue
+- **Infrastructure**: E2B sandboxes with automatic HTTPS
+- **AI Integration**: Claude API with optimized prompts
+- **Isolation**: Native E2B sandbox security and resource limits
 
 ## Development Commands
 
-### Frontend Development
+### Development Commands
+
+#### Setup and Installation
 ```bash
-# Install dependencies
-npm install
+# Install all dependencies
+pnpm install
 
-# Start development server
-npm run dev
+# Build all packages
+pnpm build
 
-# Build for production  
-npm run build
+# Type checking across monorepo
+pnpm type-check
 
-# Run linting
-npm run lint
-
-# Run type checking
-npm run type-check
+# Linting across monorepo
+pnpm lint
 ```
 
-### Backend Development
+#### Orchestrator Development
 ```bash
-# Start backend server
-npm run server
+# Start orchestrator in development mode
+pnpm dev:orchestrator
 
-# Run database migrations
-npm run db:migrate
+# Build orchestrator
+pnpm build:orchestrator
 
-# Seed development data
-npm run db:seed
-
-# Run API tests
-npm run test:api
+# Run orchestrator tests
+pnpm test:orchestrator
 ```
 
-### Infrastructure
+#### E2B Integration Testing
 ```bash
-# Deploy development environment
-npm run deploy:dev
+# Test E2B connectivity
+pnpm test:e2b
 
-# Deploy production environment  
-npm run deploy:prod
+# Run orchestration tests
+pnpm test:orchestration
 
-# Monitor system health
-npm run monitor
+# Monitor E2B usage
+pnpm monitor:e2b
+```
 
-# View logs
-npm run logs
+#### Health Checks
+```bash
+# Check orchestrator health
+curl http://localhost:3001/health
+
+# Check API status
+curl http://localhost:3001/api/status
 ```
 
 ## Key Technical Decisions
@@ -81,20 +103,29 @@ npm run logs
 ### Technology Stack
 - **Frontend**: React + Vite + TailwindCSS + Socket.io
 - **Backend**: Node.js + Express + PostgreSQL + Redis
-- **Infrastructure**: Docker + Railway/AWS + Terraform
+- **Infrastructure**: E2B Sandboxes (replacing DigitalOcean VMs)
 - **AI**: Anthropic Claude API with optimized prompts
+- **Architecture**: Monorepo with Turborepo + PNPM workspaces
 
 ### Security & Isolation
-- Docker containerization with strict resource limits
-- Network isolation with minimal port exposure
-- Automatic VM destruction after timeout
+- E2B sandboxes with native isolation and security
+- Automatic resource limits (CPU, RAM, storage)
+- Network isolation with HTTPS endpoints
 - Code analysis before execution
+- Auto-cleanup after timeout (1h hobby, 24h pro)
 
 ### Scalability Approach
-- Horizontal scaling through VM provisioning
-- Queue-based request handling
+- E2B sandbox scaling (20 concurrent hobby, 100 pro)
+- Queue-based request handling with Redis
 - Stateless application design
-- Cost optimization through ephemeral architecture
+- Cost optimization: <$0.10/session vs target $0.50
+
+### E2B Integration Specifics
+- **Internet Access**: Default enabled, controllable via `allowInternetAccess`
+- **Public URLs**: Automatic HTTPS endpoints (`https://3000-[id].e2b.dev`)
+- **Session Limits**: 1h (hobby) / 24h (pro) aligning with ephemeral philosophy
+- **Resource Control**: Built-in CPU, RAM, storage limits
+- **Template**: Using 'anthropic-claude-code' for optimized AI generation
 
 ## Business Model Integration
 

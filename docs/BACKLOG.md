@@ -1,39 +1,64 @@
 # SpawnAI - Product Backlog
 
-## Epic 1: Core Orchestration Engine (P0 - START HERE)
-**Complexity: High** | **Timeline: 4-6 weeks**
+## 🎯 Current Development Focus (January 2025)
+
+**Primary Goal**: Feature #1 - E2B Orchestration Engine Implementation
+- **Timeline**: 3-4 weeks intensive development
+- **Architecture**: E2B Sandboxes + Claude API + Monorepo Structure
+- **Target**: <60s time-to-live app, <$0.10/session cost
+- **Documentation**: ✅ Complete technical specifications ready
+- **Status**: Ready for implementation - all specs and architecture defined
+
+### Priority Order for Implementation
+1. **Week 1-2**: Core E2B Manager + Claude Client (`src/vm/` + `src/ai/`)
+2. **Week 2-3**: Session Manager + API Routes (`src/orchestrator/` + `src/api/`)
+3. **Week 3-4**: Testing + Performance Optimization + Deployment
+4. **Week 4+**: Frontend interface (Epic 2) and additional features
+
+---
+
+## Epic 1: E2B Orchestration Engine (P0 - CRITICAL PATH)
+**Complexity: High** | **Timeline: 3-4 weeks** | **Status: Ready for Development**
 
 ### User Story
-As a user, I want to request an app generation and have the system automatically provision a secure VM, generate code, and deploy it within 3 minutes.
+As a user, I want to request an app generation and have the system automatically create a secure E2B sandbox, generate code with Claude, and deploy it within 60 seconds.
+
+### Technical Decision: E2B Integration
+✅ **Architecture Decided**: Using E2B sandboxes instead of DigitalOcean VMs
+- **Performance**: <60s total time vs 3 minutes target
+- **Cost**: <$0.10/session vs $0.50 target ceiling
+- **Security**: Native isolation with controlled internet access
+- **Scaling**: 20 concurrent (hobby) / 100 concurrent (pro)
 
 ### Features Breakdown
 
-#### 1.1 VM Lifecycle Management
-- [ ] **VM Creation**: Provision Docker containers with resource limits
-- [ ] **Environment Setup**: Install Node.js, Python, or other runtimes as needed
-- [ ] **Network Isolation**: Configure isolated networking with minimal port exposure
-- [ ] **Resource Monitoring**: Track CPU, memory, disk usage
-- [ ] **Auto-Destruction**: Automatic cleanup after 24-72h timeout
+#### 1.1 E2B Sandbox Management (✅ Spec Complete)
+- [ ] **Sandbox Creation**: E2B sandbox provisioning with templates
+- [ ] **Environment Setup**: Pre-configured runtimes (Node.js, Python, HTTP servers)
+- [ ] **Network Control**: Internet access management via `allowInternetAccess`
+- [ ] **Resource Monitoring**: Built-in CPU, memory, storage limits
+- [ ] **Auto-Destruction**: 1h (hobby) / 24h (pro) timeout alignment
 
-#### 1.2 Claude API Integration
-- [ ] **Prompt Engineering**: Optimize prompts for "ugly but functional" apps
-- [ ] **Code Generation**: Generate complete application code
-- [ ] **Code Validation**: Basic syntax and security checks
-- [ ] **Error Handling**: Retry logic and fallback strategies
-- [ ] **Cost Monitoring**: Track API usage and costs
+#### 1.2 Claude API Integration (✅ Spec Complete)
+- [ ] **Prompt Engineering**: E2B-optimized prompts for webapp/API/script types
+- [ ] **Code Generation**: Complete application code with E2B deployment commands
+- [ ] **Code Validation**: Security pattern detection and syntax validation
+- [ ] **Error Handling**: Retry logic and fallback prompt strategies
+- [ ] **Cost Monitoring**: Track Claude API usage and per-session costs
 
-#### 1.3 SSL/TLS Certificate Management
-- [ ] **Certificate Generation**: Create self-signed or Let's Encrypt certs
-- [ ] **Certificate Installation**: Auto-configure HTTPS for generated apps
-- [ ] **Certificate Renewal**: Handle certificate expiration
-- [ ] **Security Validation**: Verify certificate installation
+#### 1.3 E2B Application Deployment (✅ Spec Complete)
+- [ ] **Code Deployment**: Write generated code to E2B filesystem
+- [ ] **Dependency Installation**: npm/pip package installation in sandbox
+- [ ] **Application Start**: Execute startup commands and process management
+- [ ] **Health Checks**: Verify app accessibility via HTTPS endpoints
+- [ ] **Public URL Management**: Handle `https://3000-[id].e2b.dev` endpoints
 
-#### 1.4 Application Deployment
-- [ ] **Code Compilation**: Build generated applications
-- [ ] **Port Management**: Assign unique ports per application
-- [ ] **Process Management**: Start/stop/restart application processes
-- [ ] **Health Checks**: Monitor application status
-- [ ] **Log Management**: Collect and store application logs
+#### 1.4 Session Orchestration (✅ Spec Complete)  
+- [ ] **Workflow Engine**: End-to-end session lifecycle management
+- [ ] **WebSocket Updates**: Real-time progress notifications to users
+- [ ] **Error Recovery**: Automated retry and cleanup on failures
+- [ ] **Cost Tracking**: Per-session usage and billing calculation
+- [ ] **Resource Cleanup**: Automatic sandbox destruction on timeout/completion
 
 ---
 
@@ -169,25 +194,34 @@ As a platform operator, I need insights into usage patterns to optimize performa
 
 ---
 
+## 🚀 Updated Technical Stack & Architecture
+
+### Core Technology Decisions (✅ Finalized)
+- **Infrastructure**: E2B Sandboxes (replacing DigitalOcean VMs)
+- **AI**: Anthropic Claude API with E2B-optimized prompts
+- **Backend**: Node.js + Express + TypeScript monorepo
+- **Database**: PostgreSQL + Redis for session management
+- **Architecture**: Turborepo + PNPM workspaces
+- **Security**: Native E2B isolation + code validation
+- **Performance**: <60s total time, <$0.10/session cost
+
 ## Technical Priorities for MVP
 
-### Phase 1: Core Engine (Weeks 1-6)
-1. **VM Provisioning & Management** (Epic 1.1)
-2. **Basic Claude Integration** (Epic 1.2)
-3. **Simple Deployment** (Epic 1.4)
-4. **Container Security** (Epic 3.1)
+### Phase 1: E2B Orchestration (Weeks 1-4) ⚡ CURRENT FOCUS
+1. **E2B Sandbox Management** (Epic 1.1) - ✅ Spec Complete
+2. **Claude API Integration** (Epic 1.2) - ✅ Spec Complete  
+3. **Session Orchestration** (Epic 1.4) - ✅ Spec Complete
+4. **Application Deployment** (Epic 1.3) - ✅ Spec Complete
 
-### Phase 2: User Experience (Weeks 4-8)
-1. **Chat Interface** (Epic 2.1)
-2. **Progress Tracking** (Epic 2.3)
-3. **App Management** (Epic 2.4)
-4. **Payment Integration** (Epic 4.1)
+### Phase 2: User Interface (Weeks 4-6)
+1. **Chat Interface** (Epic 2.1) - WebSocket + React
+2. **Progress Tracking** (Epic 2.3) - Real-time session updates
+3. **App Management** (Epic 2.4) - Session lifecycle control
 
-### Phase 3: Production Readiness (Weeks 6-10)
-1. **SSL/TLS Management** (Epic 1.3)
-2. **Security Hardening** (Epic 3.2)
-3. **Monitoring** (Epic 3.3)
-4. **Testing Suite** (Epic 5.1)
+### Phase 3: Production Features (Weeks 6-8)
+1. **Payment Integration** (Epic 4.1) - Per-session billing
+2. **Advanced Security** (Epic 3.2) - Enhanced validation
+3. **Analytics & Monitoring** (Epic 6.1) - Usage tracking
 
 ---
 
